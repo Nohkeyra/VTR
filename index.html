@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" class="dark" style="background-color: #020203; color: #F8FAFC;">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Elite 72 | Design Intelligence</title>
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <!-- Apple Mobile/PWA Capabilities -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Elite 72" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <!-- Global theme colors -->
+    <meta name="theme-color" content="#020203" />
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: #020203;
+        color: #F8FAFC;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        overflow: hidden;
+      }
+      @keyframes e72-spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      .e72-spinner {
+        width: 36px;
+        height: 36px;
+        border: 3px solid rgba(191, 255, 0, 0.15);
+        border-top-color: #BFFF00;
+        border-radius: 50%;
+        animation: e72-spin 0.7s linear infinite;
+      }
+    </style>
+  </head>
+  <body style="background-color: #020203; color: #F8FAFC;">
+    <div id="root">
+      <div style="height: 100vh; width: 100vw; display: flex; align-items: center; justify-content: center; background-color: #020203; color: #F8FAFC;">
+        <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px;">
+          <div class="e72-spinner"></div>
+          <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; color: #BFFF00; font-family: monospace;">ELITE 72</div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
