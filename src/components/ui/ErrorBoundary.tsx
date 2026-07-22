@@ -20,66 +20,24 @@ export class ErrorBoundary extends React.Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Uncaught error in component tree:", error, errorInfo);
+    console.error("Uncaught error:", error, errorInfo);
   }
 
   public render() {
     if (this.state.hasError) {
       return (
-        <div style={{
-          minHeight: '100vh',
-          width: '100vw',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '2rem',
-          backgroundColor: '#020203',
-          color: '#F8FAFC',
-          fontFamily: 'system-ui, sans-serif',
-          textAlign: 'center',
-          boxSizing: 'border-box'
-        }}>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.75rem', color: '#BFFF00' }}>
-            Elite 72 Studio Recovery
-          </h2>
-          <p style={{ color: '#94A3B8', marginBottom: '1.5rem', maxWidth: '480px', fontSize: '0.9rem', lineHeight: 1.5 }}>
-            {this.state.error?.message || "An unexpected render event occurred. You can reset local storage or retry."}
-          </p>
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <div className="h-dvh flex flex-col items-center justify-center p-4 bg-bg-primary text-center">
+          <h2 className="text-xl font-bold text-text-primary mb-4">Something went wrong.</h2>
+          <p className="text-text-secondary mb-6">{this.state.error?.message || "An unexpected error occurred."}</p>
+          <div className="flex gap-4">
             <button
-              style={{
-                padding: '0.6rem 1.25rem',
-                backgroundColor: '#BFFF00',
-                color: '#000000',
-                fontWeight: 'bold',
-                borderRadius: '0.5rem',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '0.85rem'
-              }}
-              onClick={() => {
-                try {
-                  localStorage.clear();
-                } catch (e) {
-                  console.error(e);
-                }
-                window.location.reload();
-              }}
+              className="px-4 py-2 bg-accent text-white rounded-lg hover:opacity-90"
+              onClick={() => window.location.reload()}
             >
-              Reset Storage & Reload
+              Reload Everything
             </button>
             <button
-              style={{
-                padding: '0.6rem 1.25rem',
-                backgroundColor: '#1E293B',
-                color: '#F8FAFC',
-                fontWeight: 'bold',
-                borderRadius: '0.5rem',
-                border: '1px solid #334155',
-                cursor: 'pointer',
-                fontSize: '0.85rem'
-              }}
+              className="px-4 py-2 bg-bg-tertiary text-text-primary rounded-lg hover:bg-border-primary"
               onClick={() => this.setState({ hasError: false, error: null })}
             >
               Try Recovering

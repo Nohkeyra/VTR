@@ -27,3 +27,24 @@ export const safeLocalStorage = {
     }
   }
 };
+
+/**
+ * Safely parses a JSON string that may have come from localStorage.
+ * Corrupted/legacy-shaped data must NEVER throw during module init —
+ * an uncaught throw here happens before React mounts, so even the
+ * ErrorBoundary can't catch it, producing a permanent white screen.
+ * On any parse failure the offending key is wiped so the app can
+ * recover on the very next load instead of crashing forever.
+ */
+export function safeJSONParse<T>(raw: string | null, fallback: T, storageKey?: string): T {
+  if (!raw) return fallback;
+  try {
+    return JSON.parse(raw) as T;
+  } catch (e) {
+    console.error(`Corrupted JSON in localStorage${storageKey ? ` for key "${storageKey}"` : ''}, resetting to default.`, e);
+    if (storageKey) {
+      safeLocalStorage.removeItem(storageKey);
+    }
+    return fallback;
+  }
+}

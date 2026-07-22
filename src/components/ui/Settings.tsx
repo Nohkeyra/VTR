@@ -217,7 +217,7 @@ export const Settings: React.FC<SettingsProps> = ({
                     type="url"
                     value={publicBackendUrl}
                     onChange={(e) => setPublicBackendUrl(e.target.value)}
-                    placeholder="https://your-backend.onrender.com"
+                    placeholder="https://your-backend-url.example.com"
                     className="w-full bg-bg-primary/30 border border-border-primary rounded-xl px-5 py-4 text-xs font-mono text-accent placeholder-accent/20 focus:outline-none focus:border-accent/40 transition-all shadow-inner group-hover/input:bg-bg-primary/50"
                   />
                   <div className="absolute top-0 left-0 w-1 h-full bg-accent/20 rounded-l-xl group-focus-within/input:bg-accent transition-colors" />

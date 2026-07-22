@@ -2,22 +2,6 @@ import express from "express";
 import path from "path";
 import fs from "fs";
 import sharp from "sharp";
-import { GoogleGenAI } from "@google/genai";
-
-function getGeminiClient(customApiKey?: string) {
-  const apiKey = customApiKey || process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error("GEMINI_API_KEY environment variable is not configured.");
-  }
-  return new GoogleGenAI({
-    apiKey,
-    httpOptions: {
-      headers: {
-        'User-Agent': 'aistudio-build',
-      },
-    },
-  });
-}
 
 async function ensurePremiumPwaAssets() {
   const publicDir = path.join(process.cwd(), 'public');
@@ -174,104 +158,6 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
-  // Server-side Gemini API Proxy
-  app.post("/api/generate", async (req, res) => {
-    try {
-      const {
-        model,
-        prompt,
-        base64Image,
-        mimeType,
-        aspectRatio,
-        imageSize,
-        apiKeyOverride,
-        systemInstruction,
-        responseMimeType,
-        responseSchema
-      } = req.body;
-
-      const selectedModel = model || "gemini-3.1-flash-lite-image";
-      const ai = getGeminiClient(apiKeyOverride);
-
-      let dynamicSystemInstruction = systemInstruction;
-      if (!dynamicSystemInstruction) {
-        if (prompt && (prompt.toLowerCase().includes("vector") || prompt.toLowerCase().includes("flat 2d") || prompt.toLowerCase().includes("svg style"))) {
-          dynamicSystemInstruction = `[VORTEX VECTOR ENGINE]\n[ROLE: MASTER ILLUSTRATOR & VECTOR ARTIST]\n\nYou are a high-performance visual synthesis engine specialized in pure, flat 2D graphic design and vector illustration.\nYour primary mandate is LITERAL TRANSLATION of the provided concept into a professional digital vector asset.`;
-        } else {
-          dynamicSystemInstruction = `[IDEOGRAM 3.0 / VORTEX RENDERING ENGINE]\n[ROLE: ELITE GRAPHIC DESIGNER & ARCHITECTURAL RENDERER]\n\nYou are a high-performance visual synthesis engine specialized in extreme-fidelity graphic identity and 3D typography.\nYour primary mandate is LITERAL TRANSLATION of the provided concept into a professional visual asset.`;
-        }
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const parts: any[] = [];
-
-      if (base64Image && mimeType) {
-        const formattedBase64 = base64Image.includes(",") ? base64Image.split(",")[1] : base64Image;
-        parts.push({
-          inlineData: {
-            data: formattedBase64,
-            mimeType: mimeType
-          }
-        });
-      }
-
-      if (prompt) {
-        parts.push({ text: prompt });
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const config: any = {
-        systemInstruction: dynamicSystemInstruction
-      };
-
-      if (responseMimeType) {
-        config.responseMimeType = responseMimeType;
-      }
-      if (responseSchema) {
-        config.responseSchema = responseSchema;
-      }
-
-      const isImageModel = selectedModel.includes("image") || selectedModel.includes("imagen");
-      if (isImageModel) {
-        config.imageConfig = {
-          aspectRatio: aspectRatio || "1:1"
-        };
-        if (selectedModel.includes("gemini-3")) {
-          config.imageConfig.imageSize = imageSize || "1K";
-        }
-      }
-
-      const response = await ai.models.generateContent({
-        model: selectedModel,
-        contents: { parts },
-        config
-      });
-
-      const candidate = response.candidates?.[0];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const imagePart = candidate?.content?.parts?.find((part: any) => part?.inlineData?.data);
-
-      if (imagePart?.inlineData?.data) {
-        const b64 = `data:${imagePart.inlineData.mimeType || 'image/png'};base64,${imagePart.inlineData.data}`;
-        return res.json({ image: b64, modelUsed: selectedModel });
-      } else {
-        const text = response.text || "Gemini returned no content";
-        return res.json({ text, modelUsed: selectedModel });
-      }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      console.error("Gemini Generation Error:", error);
-      const msg = error.message || String(error);
-      if (msg.includes("401") || msg.includes("invalid") || msg.includes("key")) {
-        return res.status(401).json({ error: `The Gemini API key is invalid or expired. Details: ${msg}` });
-      }
-      if (msg.includes("429") || msg.includes("Quota") || msg.includes("RESOURCE_EXHAUSTED")) {
-        return res.status(429).json({ error: `Free-tier limit reached. Try again later. Details: ${msg}` });
-      }
-      return res.status(500).json({ error: msg || "Failed to generate content" });
-    }
-  });
-
   // This endpoint prepares the reference image data (cropping if needed)
   // and returns it in a format the frontend Gemini SDK can use.
   app.post("/api/prepare-reference", async (req, res) => {
@@ -365,22 +251,11 @@ async function startServer() {
     });
     app.use(vite.middlewares);
     app.use(express.static(path.join(process.cwd(), 'public')));
-    app.use('*', async (req, res, next) => {
-      const url = req.originalUrl;
-      try {
-        let template = fs.readFileSync(path.resolve(process.cwd(), 'index.html'), 'utf-8');
-        template = await vite.transformIndexHtml(url, template);
-        res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
-      } catch (e) {
-        vite.ssrFixStacktrace(e as Error);
-        next(e);
-      }
-    });
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.use(express.static(path.join(process.cwd(), 'public')));
-    app.get('*', (req, res) => {
+    app.get('*all', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }

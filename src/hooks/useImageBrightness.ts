@@ -6,10 +6,11 @@ import { useAppStore } from '../store/useAppStore';
  * Calculates brightness on a scale of 0 to 1
  */
 export function useImageBrightness(imageUrl: string | string[] | null) {
-  useEffect(() => {
-    const { imageBrightness, setImageBrightness } = useAppStore.getState();
+  const { imageBrightness, setImageBrightness } = useAppStore();
 
+  useEffect(() => {
     if (!imageUrl || typeof imageUrl !== 'string') {
+      // Default to neutral brightness if no image or multiple images (not supported yet)
       if (imageBrightness !== 0.5) {
         setImageBrightness(0.5);
       }
@@ -25,6 +26,7 @@ export function useImageBrightness(imageUrl: string | string[] | null) {
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
+      // Small sample size for performance
       canvas.width = 40;
       canvas.height = 40;
 
@@ -40,6 +42,8 @@ export function useImageBrightness(imageUrl: string | string[] | null) {
         g = data[x + 1];
         b = data[x + 2];
 
+        // Perceptive brightness (HSP)
+        // http://alienryderflex.com/hsp.html
         avg = Math.sqrt(
           0.299 * (r * r) +
           0.587 * (g * g) +
@@ -49,17 +53,16 @@ export function useImageBrightness(imageUrl: string | string[] | null) {
       }
 
       const brightness = colorSum / (canvas.width * canvas.height) / 255;
-      const currentBrightness = useAppStore.getState().imageBrightness;
-      if (Math.abs(currentBrightness - brightness) > 0.02) {
+      if (Math.abs(imageBrightness - brightness) > 0.02) {
         setImageBrightness(brightness);
       }
     };
 
     img.onerror = () => {
-      const currentBrightness = useAppStore.getState().imageBrightness;
-      if (currentBrightness !== 0.5) {
+      console.error('Failed to load image for brightness calculation');
+      if (imageBrightness !== 0.5) {
         setImageBrightness(0.5);
       }
     };
-  }, [imageUrl]);
+  }, [imageUrl, imageBrightness, setImageBrightness]);
 }

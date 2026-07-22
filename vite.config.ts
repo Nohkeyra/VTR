@@ -16,8 +16,7 @@ export default defineConfig(({ mode }) => {
       "import.meta.env.VITE_API_URL": JSON.stringify(env.VITE_API_URL || ""),
       "process.env.VITE_API_URL": JSON.stringify(env.VITE_API_URL || ""),
       "process.env.GEMINI_API_KEY": JSON.stringify(process.env.GEMINI_API_KEY || env.GEMINI_API_KEY || ""),
-      "process.env.API_KEY": JSON.stringify(process.env.API_KEY || env.API_KEY || ""),
-      "process.env.NODE_ENV": JSON.stringify(mode)
+      "process.env.API_KEY": JSON.stringify(process.env.API_KEY || env.API_KEY || "")
     },
     resolve: {
       alias: {
@@ -43,8 +42,6 @@ export default defineConfig(({ mode }) => {
       allowedHosts: true
     },
     build: {
-      outDir: "dist",
-      emptyOutDir: true,
       minify: "esbuild",
       sourcemap: false,
       rollupOptions: {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { safeLocalStorage } from '../utils/storageUtils';
+import { safeLocalStorage, safeJSONParse } from '../utils/storageUtils';
 
 export interface HistoryItem {
   id: string;
@@ -12,7 +12,7 @@ export interface HistoryItem {
 export function useHistory(addLog: (msg: string, type?: 'info' | 'success' | 'error' | 'process') => void) {
   const [history, setHistory] = useState<HistoryItem[]>(() => {
     const saved = safeLocalStorage.getItem('genHistory');
-    return saved ? JSON.parse(saved) : [];
+    return safeJSONParse<HistoryItem[]>(saved, [], 'genHistory');
   });
 
   useEffect(() => {

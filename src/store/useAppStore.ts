@@ -3,7 +3,7 @@ import { Preset } from '../types/presets';
 import { ImageModel } from '../services/modelRegistry';
 import { ColorPalette } from '../lib/colorPalettes';
 import { PerformanceMetric } from '../types/performance';
-import { safeLocalStorage } from '../utils/storageUtils';
+import { safeLocalStorage, safeJSONParse } from '../utils/storageUtils';
 import { LogEntry } from '../hooks/useLogs';
 import { HistoryItem } from '../hooks/useHistory';
 
@@ -167,15 +167,8 @@ export const useAppStore = create<AppStore>((set, get) => {
     // User Preferences
     clientSideMode: safeLocalStorage.getItem('clientSideMode') === 'true',
     favoritePresets: (() => {
-      try {
-        const saved = safeLocalStorage.getItem('favoritePresets');
-        if (!saved) return new Set<string>();
-        const parsed = JSON.parse(saved);
-        return Array.isArray(parsed) ? new Set<string>(parsed) : new Set<string>();
-      } catch (e) {
-        console.warn('Error reading favoritePresets from storage:', e);
-        return new Set<string>();
-      }
+      const saved = safeLocalStorage.getItem('favoritePresets');
+      return new Set<string>(safeJSONParse<string[]>(saved, [], 'favoritePresets'));
     })(),
     usedPresets: new Set<string>(),
 
@@ -188,38 +181,19 @@ export const useAppStore = create<AppStore>((set, get) => {
 
     // History Hook Logic
     history: (() => {
-      try {
-        const saved = safeLocalStorage.getItem('genHistory');
-        if (!saved) return [];
-        const parsed = JSON.parse(saved);
-        return Array.isArray(parsed) ? parsed : [];
-      } catch (e) {
-        console.warn('Error reading genHistory from storage:', e);
-        return [];
-      }
+      const saved = safeLocalStorage.getItem('genHistory');
+      return safeJSONParse<HistoryItem[]>(saved, [], 'genHistory');
     })(),
 
     // Gemini Keys Hook Logic
     geminiKeys: (() => {
-      try {
-        const saved = safeLocalStorage.getItem('geminiKeys');
-        if (!saved) return [''];
-        const parsed = JSON.parse(saved);
-        return Array.isArray(parsed) && parsed.length > 0 ? parsed : [''];
-      } catch (e) {
-        console.warn('Error reading geminiKeys from storage:', e);
-        return [''];
-      }
+      const saved = safeLocalStorage.getItem('geminiKeys');
+      return safeJSONParse<string[]>(saved, [''], 'geminiKeys');
     })(),
     activeKeyIndex: (() => {
-      try {
-        const saved = safeLocalStorage.getItem('activeKeyIndex');
-        if (!saved) return 0;
-        const parsed = parseInt(saved, 10);
-        return isNaN(parsed) ? 0 : parsed;
-      } catch {
-        return 0;
-      }
+      const saved = safeLocalStorage.getItem('activeKeyIndex');
+      const parsed = saved ? parseInt(saved, 10) : 0;
+      return Number.isFinite(parsed) ? parsed : 0;
     })(),
 
     // UI Setters
